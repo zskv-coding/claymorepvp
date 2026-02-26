@@ -25,6 +25,7 @@ public class DuelListener implements Listener {
     public void onPlayerDeath(PlayerDeathEvent event) {
         Player victim = event.getEntity();
         if (duelManager.isInDuel(victim.getUniqueId())) {
+            event.getDrops().clear();
             Duel duel = duelManager.getDuel(victim.getUniqueId());
             UUID winnerUuid = duel.getOpponent(victim.getUniqueId());
             duelManager.endDuel(winnerUuid, victim.getUniqueId());
