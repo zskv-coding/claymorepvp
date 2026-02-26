@@ -1,0 +1,12 @@
+name: claymorepvp
+version: '1.0-SNAPSHOT'
+main: com.zskv.claymorepvp.Claymorepvp
+api-version: '1.21'
+commands:
+  duel:
+    description: Challenge a player to a duel
+    usage: /duel <player>
+  claymorepvp:
+    description: Manage ClaymorePvP
+    usage: /claymorepvp <setspawn1|setspawn2>
+    permission: claymorepvp.admin

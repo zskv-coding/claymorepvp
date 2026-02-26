@@ -1,0 +1,7 @@
+# ClaymorePvP Configuration
+
+arena:
+  # Spawn locations will be saved here automatically when using /claymorepvp setspawn commands.
+  # Hardcoded defaults are also used in DuelManager.
+  # spawn1:
+  # spawn2:
