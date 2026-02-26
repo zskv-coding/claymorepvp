@@ -1,5 +1,6 @@
 package com.zskv.claymorepvp.gui;
 
+import com.zskv.claymorepvp.util.ChatUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -12,7 +13,7 @@ import java.util.Collections;
 public class DuelGUI {
 
     public static Inventory createRequestGUI(Player challenger) {
-        Inventory inv = Bukkit.createInventory(null, 27, "Duel Request: " + challenger.getName());
+        Inventory inv = Bukkit.createInventory(null, 27, ChatUtils.formatNoPrefix("&8Duel Request: &6" + challenger.getName()));
 
         ItemStack glass = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
         ItemMeta glassMeta = glass.getItemMeta();
@@ -28,16 +29,16 @@ public class DuelGUI {
         ItemStack accept = new ItemStack(Material.LIME_WOOL);
         ItemMeta acceptMeta = accept.getItemMeta();
         if (acceptMeta != null) {
-            acceptMeta.setDisplayName("§a§lACCEPT");
-            acceptMeta.setLore(Collections.singletonList("§7Click to accept the duel!"));
+            acceptMeta.setDisplayName(ChatUtils.formatNoPrefix("&a&lACCEPT"));
+            acceptMeta.setLore(Collections.singletonList(ChatUtils.formatNoPrefix("&7Click to accept the duel!")));
             accept.setItemMeta(acceptMeta);
         }
 
         ItemStack deny = new ItemStack(Material.RED_WOOL);
         ItemMeta denyMeta = deny.getItemMeta();
         if (denyMeta != null) {
-            denyMeta.setDisplayName("§c§lDENY");
-            denyMeta.setLore(Collections.singletonList("§7Click to decline the duel."));
+            denyMeta.setDisplayName(ChatUtils.formatNoPrefix("&c&lDENY"));
+            denyMeta.setLore(Collections.singletonList(ChatUtils.formatNoPrefix("&7Click to decline the duel.")));
             deny.setItemMeta(denyMeta);
         }
 
