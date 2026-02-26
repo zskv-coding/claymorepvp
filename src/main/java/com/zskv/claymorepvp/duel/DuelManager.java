@@ -6,11 +6,13 @@ import com.zskv.claymorepvp.kit.Kit;
 import com.zskv.claymorepvp.kit.KitManager;
 import com.zskv.claymorepvp.util.ChatUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 
 import java.util.*;
@@ -137,6 +139,9 @@ public class DuelManager {
         p1.teleport(spawn1);
         p2.teleport(spawn2);
 
+        p1.setGameMode(GameMode.ADVENTURE);
+        p2.setGameMode(GameMode.ADVENTURE);
+
         p1.sendMessage(ChatUtils.format("&aDuel starting in &e10 &aseconds..."));
         p2.sendMessage(ChatUtils.format("&aDuel starting in &e10 &aseconds..."));
 
@@ -190,11 +195,44 @@ public class DuelManager {
             Player winner = winnerUuid != null ? Bukkit.getPlayer(winnerUuid) : null;
             Player loser = loserUuid != null ? Bukkit.getPlayer(loserUuid) : null;
 
-            if (winner != null) winner.sendMessage(ChatUtils.format("&aYou won the duel!"));
-            if (loser != null) loser.sendMessage(ChatUtils.format("&cYou lost the duel!"));
+            if (winner != null) {
+                winner.sendMessage(ChatUtils.format("&aYou won the duel!"));
+                winner.getInventory().clear();
+                winner.getInventory().setArmorContents(null);
+            }
+            if (loser != null) {
+                loser.sendMessage(ChatUtils.format("&cYou lost the duel!"));
+                loser.getInventory().clear();
+                loser.getInventory().setArmorContents(null);
+            }
             
-            if (winner != null) winner.teleport(winner.getWorld().getSpawnLocation());
-            if (loser != null) loser.teleport(loser.getWorld().getSpawnLocation());
+            // Clear items on floor in arena_maps
+            World arenaWorld = Bukkit.getWorld("arena_maps");
+            if (arenaWorld != null) {
+                arenaWorld.getEntitiesByClass(Item.class).forEach(Item::remove);
+            }
+            
+            // Teleport all players to hub
+            World hubWorld = Bukkit.getWorld("hub");
+            if (hubWorld == null) {
+                hubWorld = Bukkit.createWorld(new WorldCreator("hub"));
+            }
+            
+            if (hubWorld != null) {
+                Location hubLoc = new Location(hubWorld, 0.46, 101.06, 0.59, 360.02f, -0.01f);
+                
+                // Use a small delay for teleporting to hub in case players are dead and need to respawn
+                Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                    if (winner != null && winner.isOnline()) {
+                        if (winner.isDead()) winner.spigot().respawn();
+                        winner.teleport(hubLoc);
+                    }
+                    if (loser != null && loser.isOnline()) {
+                        if (loser.isDead()) loser.spigot().respawn();
+                        loser.teleport(hubLoc);
+                    }
+                }, 5L);
+            }
             
             // Reset barrier if no other duels are active (for now only 1 duel at a time :>)
             if (activeDuels.isEmpty()) {
