@@ -1,6 +1,7 @@
 package com.zskv.claymorepvp.listener;
 
 import com.zskv.claymorepvp.duel.DuelManager;
+import com.zskv.claymorepvp.util.ChatUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -19,7 +20,7 @@ public class GuiListener implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         String title = event.getView().getTitle();
-        if (!title.startsWith("Duel Request: ")) return;
+        if (!title.contains("Duel Request: ")) return;
 
         event.setCancelled(true);
 
@@ -29,21 +30,22 @@ public class GuiListener implements Listener {
         ItemStack clicked = event.getCurrentItem();
         if (clicked == null || clicked.getType() == Material.AIR) return;
 
-        String challengerName = title.replace("Duel Request: ", "");
+        // Strip colors to get name
+        String challengerName = org.bukkit.ChatColor.stripColor(title).replace("Duel Request: ", "");
         Player challenger = Bukkit.getPlayer(challengerName);
 
         if (clicked.getType() == Material.LIME_WOOL) {
             player.closeInventory();
             if (challenger == null || !challenger.isOnline()) {
-                player.sendMessage("§cChallenger is no longer online.");
+                player.sendMessage(ChatUtils.format("&cChallenger is no longer online."));
                 return;
             }
             duelManager.acceptRequest(player, challenger);
         } else if (clicked.getType() == Material.RED_WOOL) {
             player.closeInventory();
-            player.sendMessage("§cYou declined the duel request.");
+            player.sendMessage(ChatUtils.format("&cYou declined the duel request."));
             if (challenger != null && challenger.isOnline()) {
-                challenger.sendMessage("§c" + player.getName() + " declined your duel request.");
+                challenger.sendMessage(ChatUtils.format("&c" + player.getName() + " declined your duel request."));
             }
         }
     }

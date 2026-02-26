@@ -2,6 +2,7 @@ package com.zskv.claymorepvp.command;
 
 import com.zskv.claymorepvp.duel.DuelManager;
 import com.zskv.claymorepvp.kit.KitManager;
+import com.zskv.claymorepvp.util.ChatUtils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -19,19 +20,19 @@ public class ClaymorepvpCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage("This command can only be used by players.");
+            sender.sendMessage(ChatUtils.format("&cThis command can only be used by players."));
             return true;
         }
 
         Player player = (Player) sender;
 
         if (!player.hasPermission("claymorepvp.admin")) {
-            player.sendMessage("You do not have permission to use this command.");
+            player.sendMessage(ChatUtils.format("&cYou do not have permission to use this command."));
             return true;
         }
 
         if (args.length == 0) {
-            player.sendMessage("Usage: /claymorepvp <setspawn1|setspawn2|savekit|deletekit>");
+            player.sendMessage(ChatUtils.format("&cUsage: /claymorepvp <setspawn1|setspawn2|savekit|deletekit>"));
             return true;
         }
 
@@ -39,43 +40,43 @@ public class ClaymorepvpCommand implements CommandExecutor {
 
         if (subCommand.equals("setspawn1")) {
             duelManager.setSpawn1(player.getLocation());
-            player.sendMessage("Spawn 1 set!");
+            player.sendMessage(ChatUtils.format("&aSpawn 1 set!"));
             return true;
         }
 
         if (subCommand.equals("setspawn2")) {
             duelManager.setSpawn2(player.getLocation());
-            player.sendMessage("Spawn 2 set!");
+            player.sendMessage(ChatUtils.format("&aSpawn 2 set!"));
             return true;
         }
 
         if (subCommand.equals("savekit")) {
             if (args.length < 2) {
-                player.sendMessage("Usage: /claymorepvp savekit <name>");
+                player.sendMessage(ChatUtils.format("&cUsage: /claymorepvp savekit <name>"));
                 return true;
             }
             String kitName = args[1];
             kitManager.saveKit(kitName, player.getInventory().getContents(), player.getInventory().getArmorContents());
-            player.sendMessage("Kit '" + kitName + "' saved from your current inventory!");
+            player.sendMessage(ChatUtils.format("&aKit '&e" + kitName + "&a' saved from your current inventory!"));
             return true;
         }
 
         if (subCommand.equals("deletekit")) {
             if (args.length < 2) {
-                player.sendMessage("Usage: /claymorepvp deletekit <name>");
+                player.sendMessage(ChatUtils.format("&cUsage: /claymorepvp deletekit <name>"));
                 return true;
             }
             String kitName = args[1];
             if (!kitManager.kitExists(kitName)) {
-                player.sendMessage("Kit '" + kitName + "' does not exist.");
+                player.sendMessage(ChatUtils.format("&cKit '&e" + kitName + "&c' does not exist."));
                 return true;
             }
             kitManager.deleteKit(kitName);
-            player.sendMessage("Kit '" + kitName + "' deleted!");
+            player.sendMessage(ChatUtils.format("&aKit '&e" + kitName + "&a' deleted!"));
             return true;
         }
 
-        player.sendMessage("Usage: /claymorepvp <setspawn1|setspawn2|savekit|deletekit>");
+        player.sendMessage(ChatUtils.format("&cUsage: /claymorepvp <setspawn1|setspawn2|savekit|deletekit>"));
         return true;
     }
 }

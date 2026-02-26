@@ -4,6 +4,7 @@ import com.zskv.claymorepvp.Claymorepvp;
 import com.zskv.claymorepvp.gui.DuelGUI;
 import com.zskv.claymorepvp.kit.Kit;
 import com.zskv.claymorepvp.kit.KitManager;
+import com.zskv.claymorepvp.util.ChatUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -84,23 +85,23 @@ public class DuelManager {
 
     public void sendRequest(Player challenger, Player challenged, String kitName) {
         if (isInDuel(challenger.getUniqueId()) || isInDuel(challenged.getUniqueId())) {
-            challenger.sendMessage("One of the players is already in a duel!");
+            challenger.sendMessage(ChatUtils.format("&cOne of the players is already in a duel!"));
             return;
         }
 
         Duel duel = new Duel(challenger.getUniqueId(), challenged.getUniqueId(), kitName);
         pendingRequests.put(challenged.getUniqueId(), duel);
         
-        challenger.sendMessage("Duel request sent to " + challenged.getName() + (kitName != null ? " with kit " + kitName : ""));
-        challenged.sendMessage(challenger.getName() + " has challenged you to a duel!" + (kitName != null ? " (Kit: " + kitName + ")" : ""));
+        challenger.sendMessage(ChatUtils.format("&aDuel request sent to &e" + challenged.getName() + (kitName != null ? "&a with kit &e" + kitName : "")));
+        challenged.sendMessage(ChatUtils.format("&e" + challenger.getName() + " &ahas challenged you to a duel!" + (kitName != null ? " &7(Kit: &e" + kitName + "&7)" : "")));
         challenged.openInventory(DuelGUI.createRequestGUI(challenger));
         
         // Timeout request after 30 seconds
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if (pendingRequests.get(challenged.getUniqueId()) == duel) {
                 pendingRequests.remove(challenged.getUniqueId());
-                challenger.sendMessage("Duel request to " + challenged.getName() + " expired.");
-                challenged.sendMessage("Duel request from " + challenger.getName() + " expired.");
+                challenger.sendMessage(ChatUtils.format("&cDuel request to &e" + challenged.getName() + " &cexpired."));
+                challenged.sendMessage(ChatUtils.format("&cDuel request from &e" + challenger.getName() + " &cexpired."));
             }
         }, 600L);
     }
@@ -108,12 +109,12 @@ public class DuelManager {
     public void acceptRequest(Player challenged, Player challenger) {
         Duel duel = pendingRequests.get(challenged.getUniqueId());
         if (duel == null || !duel.getChallenger().equals(challenger.getUniqueId())) {
-            challenged.sendMessage("No pending duel request from " + challenger.getName());
+            challenged.sendMessage(ChatUtils.format("&cNo pending duel request from &e" + challenger.getName()));
             return;
         }
 
         if (!canStartDuel()) {
-            challenged.sendMessage("Arena is not set up! Contact an administrator.");
+            challenged.sendMessage(ChatUtils.format("&cArena is not set up! Contact an administrator."));
             return;
         }
 
@@ -136,8 +137,8 @@ public class DuelManager {
         p1.teleport(spawn1);
         p2.teleport(spawn2);
 
-        p1.sendMessage("Duel starting in 10 seconds...");
-        p2.sendMessage("Duel starting in 10 seconds...");
+        p1.sendMessage(ChatUtils.format("&aDuel starting in &e10 &aseconds..."));
+        p2.sendMessage(ChatUtils.format("&aDuel starting in &e10 &aseconds..."));
 
         // Ensure barrier is up
         setBarrier(true);
@@ -149,8 +150,8 @@ public class DuelManager {
             @Override
             public void run() {
                 if (countdown <= 0) {
-                    p1.sendMessage("FIGHT!");
-                    p2.sendMessage("FIGHT!");
+                    p1.sendMessage(ChatUtils.formatNoPrefix("&6&lFIGHT!"));
+                    p2.sendMessage(ChatUtils.formatNoPrefix("&6&lFIGHT!"));
                     setBarrier(false);
                     duel.setState(DuelState.ACTIVE);
 
@@ -172,8 +173,8 @@ public class DuelManager {
                     return;
                 }
 
-                p1.sendMessage(countdown + "...");
-                p2.sendMessage(countdown + "...");
+                p1.sendMessage(ChatUtils.formatNoPrefix("&e" + countdown + "..."));
+                p2.sendMessage(ChatUtils.formatNoPrefix("&e" + countdown + "..."));
                 countdown--;
             }
         }.runTaskTimer(plugin, 20L, 20L);
@@ -189,8 +190,8 @@ public class DuelManager {
             Player winner = winnerUuid != null ? Bukkit.getPlayer(winnerUuid) : null;
             Player loser = loserUuid != null ? Bukkit.getPlayer(loserUuid) : null;
 
-            if (winner != null) winner.sendMessage("You won the duel!");
-            if (loser != null) loser.sendMessage("You lost the duel!");
+            if (winner != null) winner.sendMessage(ChatUtils.format("&aYou won the duel!"));
+            if (loser != null) loser.sendMessage(ChatUtils.format("&cYou lost the duel!"));
             
             if (winner != null) winner.teleport(winner.getWorld().getSpawnLocation());
             if (loser != null) loser.teleport(loser.getWorld().getSpawnLocation());

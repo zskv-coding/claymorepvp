@@ -2,6 +2,7 @@ package com.zskv.claymorepvp.listener;
 
 import com.zskv.claymorepvp.duel.Duel;
 import com.zskv.claymorepvp.duel.DuelManager;
+import com.zskv.claymorepvp.util.ChatUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -56,7 +57,7 @@ public class DuelListener implements Listener {
         if (outside) {
             // Bounce back: teleport to 'from' and set velocity away from the boundary
             event.setTo(event.getFrom());
-            player.sendMessage("You cannot leave the arena!");
+            player.sendMessage(ChatUtils.format("&cYou cannot leave the arena!"));
             Vector center = new Vector(2, 100, -1); // Roughly the center of the arena
             Vector direction = center.subtract(to.toVector()).normalize().multiply(0.5);
             player.setVelocity(direction);
