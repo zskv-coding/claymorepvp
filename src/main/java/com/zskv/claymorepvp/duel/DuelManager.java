@@ -195,7 +195,7 @@ public class DuelManager {
             if (winner != null) winner.teleport(winner.getWorld().getSpawnLocation());
             if (loser != null) loser.teleport(loser.getWorld().getSpawnLocation());
             
-            // Reset barrier if no other duels are active (assuming one arena)
+            // Reset barrier if no other duels are active (for now only 1 duel at a time :>)
             if (activeDuels.isEmpty()) {
                 setBarrier(true);
             }
