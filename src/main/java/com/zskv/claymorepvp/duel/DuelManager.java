@@ -6,14 +6,19 @@ import com.zskv.claymorepvp.kit.Kit;
 import com.zskv.claymorepvp.kit.KitManager;
 import com.zskv.claymorepvp.util.ChatUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.Color;
+import org.bukkit.FireworkEffect;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.SoundCategory;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Firework;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.meta.FireworkMeta;
 
 import java.util.*;
 
@@ -142,8 +147,13 @@ public class DuelManager {
         p1.setGameMode(GameMode.ADVENTURE);
         p2.setGameMode(GameMode.ADVENTURE);
 
-        p1.sendMessage(ChatUtils.format("&aDuel starting in &e10 &aseconds..."));
-        p2.sendMessage(ChatUtils.format("&aDuel starting in &e10 &aseconds..."));
+        if (duel.getKitName() != null) {
+            Kit kit = kitManager.getKit(duel.getKitName());
+            if (kit != null) {
+                kit.apply(p1);
+                kit.apply(p2);
+            }
+        }
 
         // Ensure barrier is up
         setBarrier(true);
@@ -155,18 +165,23 @@ public class DuelManager {
             @Override
             public void run() {
                 if (countdown <= 0) {
-                    p1.sendMessage(ChatUtils.formatNoPrefix("&6&lFIGHT!"));
-                    p2.sendMessage(ChatUtils.formatNoPrefix("&6&lFIGHT!"));
+                    String fightMsg = ChatUtils.formatNoPrefix("&6&lFIGHT!");
+                    p1.sendTitle(fightMsg, "", 5, 20, 5);
+                    p2.sendTitle(fightMsg, "", 5, 20, 5);
+                    
+                    p1.playSound(p1.getLocation(), "custom:duels_countdown_go", SoundCategory.VOICE, 1.0f, 1.0f);
+                    p2.playSound(p2.getLocation(), "custom:duels_countdown_go", SoundCategory.VOICE, 1.0f, 1.0f);
+
+                    // Spawn fireworks at specific locations
+                    World world = p1.getWorld();
+                    spawnFirework(new Location(world, 31, 100.5, -1), Color.RED);
+                    spawnFirework(new Location(world, -27, 100.5, -1), Color.BLUE);
+
+                    p1.sendMessage(fightMsg);
+                    p2.sendMessage(fightMsg);
+                    
                     setBarrier(false);
                     duel.setState(DuelState.ACTIVE);
-
-                    if (duel.getKitName() != null) {
-                        Kit kit = kitManager.getKit(duel.getKitName());
-                        if (kit != null) {
-                            kit.apply(p1);
-                            kit.apply(p2);
-                        }
-                    }
 
                     this.cancel();
                     return;
@@ -178,8 +193,34 @@ public class DuelManager {
                     return;
                 }
 
-                p1.sendMessage(ChatUtils.formatNoPrefix("&e" + countdown + "..."));
-                p2.sendMessage(ChatUtils.formatNoPrefix("&e" + countdown + "..."));
+                String title = ChatUtils.formatNoPrefix("&aGame starting in:");
+                String color;
+                if (countdown == 3) color = "&e"; // Yellow
+                else if (countdown == 2) color = "&6"; // Orange
+                else if (countdown == 1) color = "&c"; // Red
+                else color = "&a"; // Green for 4-10
+                
+                String subtitle = ChatUtils.formatNoPrefix(color + countdown);
+                
+                p1.sendTitle(title, subtitle, 0, 21, 0);
+                p2.sendTitle(title, subtitle, 0, 21, 0);
+
+                // Action Bar message: [ Challenger vs Challenged ] - Kit: KitName
+                String kitSuffix = duel.getKitName() != null ? " &7- Kit: &e" + duel.getKitName() : "";
+                String actionBarMsg = ChatUtils.formatNoPrefix("&e" + p1.getName() + " &7vs &e" + p2.getName() + kitSuffix);
+                p1.spigot().sendMessage(net.md_5.bungee.api.ChatMessageType.ACTION_BAR, net.md_5.bungee.api.chat.TextComponent.fromLegacyText(actionBarMsg));
+                p2.spigot().sendMessage(net.md_5.bungee.api.ChatMessageType.ACTION_BAR, net.md_5.bungee.api.chat.TextComponent.fromLegacyText(actionBarMsg));
+                
+                String sound;
+                if (countdown <= 3 && countdown >= 1) {
+                    sound = "custom:duels_countdown_" + countdown;
+                } else {
+                    sound = "custom:duels_countdown_default";
+                }
+                
+                p1.playSound(p1.getLocation(), sound, SoundCategory.VOICE, 1.0f, 1.0f);
+                p2.playSound(p2.getLocation(), sound, SoundCategory.VOICE, 1.0f, 1.0f);
+
                 countdown--;
             }
         }.runTaskTimer(plugin, 20L, 20L);
@@ -247,5 +288,17 @@ public class DuelManager {
 
     public Duel getDuel(UUID uuid) {
         return activeDuels.get(uuid);
+    }
+
+    private void spawnFirework(Location loc, Color color) {
+        Firework fw = loc.getWorld().spawn(loc, Firework.class);
+        FireworkMeta fwm = fw.getFireworkMeta();
+        fwm.addEffect(FireworkEffect.builder()
+                .withColor(color)
+                .withFade(Color.WHITE)
+                .with(FireworkEffect.Type.BALL_LARGE)
+                .build());
+        fwm.setPower(2); // Flies up before exploding
+        fw.setFireworkMeta(fwm);
     }
 }
