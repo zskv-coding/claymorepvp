@@ -57,8 +57,6 @@ public class DuelListener implements Listener {
             // Bounce back: teleport to 'from' and set velocity away from the boundary
             event.setTo(event.getFrom());
             player.sendMessage("You cannot leave the arena!");
-            
-            // Optional: apply a slight knockback towards the center
             Vector center = new Vector(2, 100, -1); // Roughly the center of the arena
             Vector direction = center.subtract(to.toVector()).normalize().multiply(0.5);
             player.setVelocity(direction);
