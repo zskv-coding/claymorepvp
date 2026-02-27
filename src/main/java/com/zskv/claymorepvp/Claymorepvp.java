@@ -2,6 +2,7 @@ package com.zskv.claymorepvp;
 
 import com.zskv.claymorepvp.command.ClaymorepvpCommand;
 import com.zskv.claymorepvp.command.DuelCommand;
+import com.zskv.claymorepvp.database.DatabaseManager;
 import com.zskv.claymorepvp.duel.DuelManager;
 import com.zskv.claymorepvp.kit.KitManager;
 import com.zskv.claymorepvp.listener.DuelListener;
@@ -12,11 +13,13 @@ public final class Claymorepvp extends JavaPlugin {
 
     private DuelManager duelManager;
     private KitManager kitManager;
+    private DatabaseManager databaseManager;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
 
+        this.databaseManager = new DatabaseManager(this);
         this.kitManager = new KitManager(this);
         this.duelManager = new DuelManager(this, kitManager);
 
@@ -31,6 +34,13 @@ public final class Claymorepvp extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (databaseManager != null) {
+            databaseManager.close();
+        }
         getLogger().info("ClaymorePvP has been disabled!");
+    }
+
+    public DatabaseManager getDatabaseManager() {
+        return databaseManager;
     }
 }
