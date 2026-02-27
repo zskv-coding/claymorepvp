@@ -264,13 +264,13 @@ public class DuelManager {
             }
             
             // Teleport all players to hub
-            World hubWorld = Bukkit.getWorld("hub");
+            World hubWorld = Bukkit.getWorld("Arena_Lobby");
             if (hubWorld == null) {
-                hubWorld = Bukkit.createWorld(new WorldCreator("hub"));
+                hubWorld = Bukkit.createWorld(new WorldCreator("Arena_Lobby"));
             }
             
             if (hubWorld != null) {
-                Location hubLoc = new Location(hubWorld, 0.46, 101.06, 0.59, 360.02f, -0.01f);
+                Location hubLoc = new Location(hubWorld, 9.57, 67, 17.47, 90f, 0f);
                 
                 // Use a small delay for teleporting to hub in case players are dead and need to respawn
                 Bukkit.getScheduler().runTaskLater(plugin, () -> {
