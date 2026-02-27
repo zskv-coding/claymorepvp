@@ -37,6 +37,10 @@ public class DuelManager {
         loadLocations();
     }
 
+    public Claymorepvp getPlugin() {
+        return plugin;
+    }
+
     private void initArena() {
         World arenaWorld = Bukkit.getWorld("arena_maps");
         if (arenaWorld == null) {
