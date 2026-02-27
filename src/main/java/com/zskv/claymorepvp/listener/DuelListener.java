@@ -49,6 +49,14 @@ public class DuelListener implements Listener {
             Duel duel = duelManager.getDuel(victim.getUniqueId());
             UUID winnerUuid = duel.getOpponent(victim.getUniqueId());
             duelManager.endDuel(winnerUuid, victim.getUniqueId());
+        } else {
+            // FFA Tracking (Assume deaths in arena_lobby are FFA deaths)
+            if (victim.getWorld().getName().equals("arena_lobby")) {
+                Player killer = victim.getKiller();
+                if (killer != null) {
+                    duelManager.getPlugin().getDatabaseManager().incrementFFAKills(killer.getUniqueId(), killer.getName());
+                }
+            }
         }
     }
 

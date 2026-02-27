@@ -6,8 +6,12 @@ import com.zskv.claymorepvp.Claymorepvp;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 public class DatabaseManager {
 
@@ -47,8 +51,11 @@ public class DatabaseManager {
                              "uuid VARCHAR(36) PRIMARY KEY, " +
                              "name VARCHAR(16), " +
                              "kills INT DEFAULT 0, " +
-                             "matches INT DEFAULT 0" +
+                             "matches INT DEFAULT 0, " +
+                             "ffa_kills INT DEFAULT 0" +
                              ")");
+             PreparedStatement psAlterFFA = conn.prepareStatement(
+                     "ALTER TABLE " + tablePrefix + "players ADD COLUMN IF NOT EXISTS ffa_kills INT DEFAULT 0");
              PreparedStatement psKits = conn.prepareStatement(
                      "CREATE TABLE IF NOT EXISTS " + tablePrefix + "player_kits (" +
                              "uuid VARCHAR(36), " +
@@ -57,6 +64,9 @@ public class DatabaseManager {
                              "PRIMARY KEY (uuid, kit_id)" +
                              ")")) {
             psPlayers.executeUpdate();
+            try {
+                psAlterFFA.executeUpdate();
+            } catch (SQLException ignored) {}
             psKits.executeUpdate();
         } catch (SQLException e) {
             plugin.getLogger().severe("Could not create database tables: " + e.getMessage());
@@ -73,8 +83,30 @@ public class DatabaseManager {
         updatePlayerStat(uuid, name, "kills", 1);
     }
 
+    public void incrementFFAKills(UUID uuid, String name) {
+        updatePlayerStat(uuid, name, "ffa_kills", 1);
+    }
+
     public void incrementMatches(UUID uuid, String name) {
         updatePlayerStat(uuid, name, "matches", 1);
+    }
+
+    public void getTop10FFAKills(Consumer<Map<String, Integer>> callback) {
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+            Map<String, Integer> results = new LinkedHashMap<>();
+            try (Connection conn = dataSource.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(
+                         "SELECT name, ffa_kills FROM " + tablePrefix + "players ORDER BY ffa_kills DESC LIMIT 10")) {
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        results.put(rs.getString("name"), rs.getInt("ffa_kills"));
+                    }
+                }
+            } catch (SQLException e) {
+                plugin.getLogger().severe("Could not fetch top FFA killers: " + e.getMessage());
+            }
+            plugin.getServer().getScheduler().runTask(plugin, () -> callback.accept(results));
+        });
     }
 
     public void incrementKitPlays(UUID uuid, String kitId) {
