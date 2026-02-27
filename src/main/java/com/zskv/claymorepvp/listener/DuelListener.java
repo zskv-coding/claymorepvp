@@ -40,6 +40,7 @@ public class DuelListener implements Listener {
         Player victim = event.getEntity();
         fallDamageImmunity.remove(victim.getUniqueId());
         if (duelManager.isInDuel(victim.getUniqueId())) {
+            event.setDeathMessage(null);
             event.getDrops().clear();
             Duel duel = duelManager.getDuel(victim.getUniqueId());
             UUID winnerUuid = duel.getOpponent(victim.getUniqueId());

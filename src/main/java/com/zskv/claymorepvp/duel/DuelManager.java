@@ -182,10 +182,10 @@ public class DuelManager {
                     p1.playSound(p1.getLocation(), "custom:duels_countdown_go", SoundCategory.VOICE, 1.0f, 1.0f);
                     p2.playSound(p2.getLocation(), "custom:duels_countdown_go", SoundCategory.VOICE, 1.0f, 1.0f);
 
-                    // Spawn fireworks at specific locations
+                    // Spawn fireworks at specific locations - only visible to participants
                     World world = p1.getWorld();
-                    spawnFirework(new Location(world, 31, 100.5, -1), Color.RED);
-                    spawnFirework(new Location(world, -27, 100.5, -1), Color.BLUE);
+                    spawnFirework(new Location(world, 31, 100.5, -1), Color.RED, p1, p2);
+                    spawnFirework(new Location(world, -27, 100.5, -1), Color.BLUE, p1, p2);
 
                     p1.sendMessage(fightMsg);
                     p2.sendMessage(fightMsg);
@@ -300,7 +300,7 @@ public class DuelManager {
         return activeDuels.get(uuid);
     }
 
-    private void spawnFirework(Location loc, Color color) {
+    private void spawnFirework(Location loc, Color color, Player... viewers) {
         Firework fw = loc.getWorld().spawn(loc, Firework.class);
         FireworkMeta fwm = fw.getFireworkMeta();
         fwm.addEffect(FireworkEffect.builder()
@@ -310,5 +310,13 @@ public class DuelManager {
                 .build());
         fwm.setPower(2); // Flies up before exploding
         fw.setFireworkMeta(fwm);
+
+        // Hide from everyone else
+        List<Player> viewerList = Arrays.asList(viewers);
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (!viewerList.contains(p)) {
+                p.hideEntity(plugin, fw);
+            }
+        }
     }
 }
