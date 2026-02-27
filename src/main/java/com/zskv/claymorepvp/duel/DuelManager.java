@@ -147,6 +147,15 @@ public class DuelManager {
             return;
         }
 
+        // Increment matches and kit plays
+        plugin.getDatabaseManager().incrementMatches(p1.getUniqueId(), p1.getName());
+        plugin.getDatabaseManager().incrementMatches(p2.getUniqueId(), p2.getName());
+
+        if (duel.getKitName() != null) {
+            plugin.getDatabaseManager().incrementKitPlays(p1.getUniqueId(), duel.getKitName());
+            plugin.getDatabaseManager().incrementKitPlays(p2.getUniqueId(), duel.getKitName());
+        }
+
         duel.setState(DuelState.STARTING);
         activeDuels.put(p1.getUniqueId(), duel);
         activeDuels.put(p2.getUniqueId(), duel);
