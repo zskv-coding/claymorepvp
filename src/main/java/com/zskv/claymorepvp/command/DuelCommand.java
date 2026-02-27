@@ -28,7 +28,7 @@ public class DuelCommand implements CommandExecutor {
         Player player = (Player) sender;
 
         if (args.length == 0) {
-            player.sendMessage(ChatUtils.format("&cUsage: /duel <player> [kit] or /duel accept <player>"));
+            player.sendMessage(ChatUtils.format("&cUsage: /duel <player>"));
             return true;
         }
 
@@ -59,16 +59,7 @@ public class DuelCommand implements CommandExecutor {
             return true;
         }
 
-        String kitName = null;
-        if (args.length >= 2) {
-            kitName = args[1];
-            if (!kitManager.kitExists(kitName)) {
-                player.sendMessage(ChatUtils.format("&cKit '&e" + kitName + "&c' does not exist!"));
-                return true;
-            }
-        }
-
-        duelManager.sendRequest(player, target, kitName);
+        player.openInventory(com.zskv.claymorepvp.gui.DuelGUI.createKitSelectionGUI(target, kitManager));
         return true;
     }
 }

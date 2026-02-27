@@ -32,11 +32,17 @@ public class ClaymorepvpCommand implements CommandExecutor {
         }
 
         if (args.length == 0) {
-            player.sendMessage(ChatUtils.format("&cUsage: /claymorepvp <setspawn1|setspawn2|savekit|deletekit>"));
+            player.sendMessage(ChatUtils.format("&cUsage: /claymorepvp <setspawn1|setspawn2|savekit|deletekit|reload>"));
             return true;
         }
 
         String subCommand = args[0].toLowerCase();
+
+        if (subCommand.equals("reload")) {
+            duelManager.reload();
+            player.sendMessage(ChatUtils.format("&aConfig and kits reloaded!"));
+            return true;
+        }
 
         if (subCommand.equals("setspawn1")) {
             duelManager.setSpawn1(player.getLocation());
@@ -76,7 +82,7 @@ public class ClaymorepvpCommand implements CommandExecutor {
             return true;
         }
 
-        player.sendMessage(ChatUtils.format("&cUsage: /claymorepvp <setspawn1|setspawn2|savekit|deletekit>"));
+        player.sendMessage(ChatUtils.format("&cUsage: /claymorepvp <setspawn1|setspawn2|savekit|deletekit|reload>"));
         return true;
     }
 }

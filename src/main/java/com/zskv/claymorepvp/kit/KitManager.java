@@ -1,6 +1,7 @@
 package com.zskv.claymorepvp.kit;
 
 import com.zskv.claymorepvp.Claymorepvp;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
@@ -28,7 +29,15 @@ public class KitManager {
             ItemStack[] contents = contentsList != null ? contentsList.toArray(new ItemStack[0]) : new ItemStack[0];
             ItemStack[] armor = armorList != null ? armorList.toArray(new ItemStack[0]) : new ItemStack[0];
 
-            kits.put(key.toLowerCase(), new Kit(key, contents, armor));
+            Material displayItem = Material.IRON_SWORD;
+            String materialName = section.getString(key + ".display-item");
+            if (materialName != null) {
+                try {
+                    displayItem = Material.valueOf(materialName.toUpperCase());
+                } catch (IllegalArgumentException ignored) {}
+            }
+
+            kits.put(key.toLowerCase(), new Kit(key, displayItem, contents, armor));
         }
     }
 
@@ -37,7 +46,7 @@ public class KitManager {
         plugin.getConfig().set(path + ".contents", contents);
         plugin.getConfig().set(path + ".armor", armor);
         plugin.saveConfig();
-        kits.put(name.toLowerCase(), new Kit(name, contents, armor));
+        kits.put(name.toLowerCase(), new Kit(name, Material.IRON_SWORD, contents, armor));
     }
 
     public void deleteKit(String name) {

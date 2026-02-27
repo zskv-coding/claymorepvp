@@ -1,7 +1,528 @@
 # ClaymorePvP Configuration
 
-arena:
-  # Spawn locations will be saved here automatically when using /claymorepvp setspawn commands.
-  # Hardcoded defaults are also used in DuelManager.
-  # spawn1:
-  # spawn2:
+kits:
+  basic:
+    display-item: DIAMOND_SWORD
+    contents:
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:diamond_sword
+      count: 1
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:diamond_axe
+      count: 1
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:crossbow
+      count: 1
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:cooked_beef
+      count: 12
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:arrow
+      count: 12
+      schema_version: 1
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:diamond_boots
+      count: 1
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:diamond_leggings
+      count: 1
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:diamond_chestplate
+      count: 1
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:diamond_helmet
+      count: 1
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:shield
+      count: 1
+      schema_version: 1
+    - null
+    - null
+    armor:
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:diamond_boots
+      count: 1
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:diamond_leggings
+      count: 1
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:diamond_chestplate
+      count: 1
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:diamond_helmet
+      count: 1
+      schema_version: 1
+  tree:
+    display-item: MACE
+    contents:
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:netherite_sword
+      count: 1
+      components:
+        minecraft:enchantments: '{"minecraft:sharpness":1}'
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:diamond_axe
+      count: 1
+      components:
+        minecraft:enchantments: '{"minecraft:sharpness":1}'
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:bow
+      count: 1
+      components:
+        minecraft:enchantments: '{"minecraft:punch":1}'
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:mace
+      count: 1
+      components:
+        minecraft:enchantments: '{"minecraft:density":5,"minecraft:wind_burst":3}'
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:wind_charge
+      count: 32
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:lingering_potion
+      count: 1
+      components:
+        minecraft:potion_contents: '{potion:"minecraft:strong_harming"}'
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:cooked_beef
+      count: 12
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:cobblestone
+      count: 64
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:water_bucket
+      count: 1
+      schema_version: 1
+    - null
+    - null
+    - null
+    - null
+    - null
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:lingering_potion
+      count: 1
+      components:
+        minecraft:potion_contents: '{potion:"minecraft:strong_harming"}'
+      schema_version: 1
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:lingering_potion
+      count: 1
+      components:
+        minecraft:potion_contents: '{potion:"minecraft:strong_harming"}'
+      schema_version: 1
+    - null
+    - null
+    - null
+    - null
+    - null
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:arrow
+      count: 10
+      schema_version: 1
+    - null
+    - null
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:lingering_potion
+      count: 1
+      components:
+        minecraft:potion_contents: '{potion:"minecraft:strong_harming"}'
+      schema_version: 1
+    - null
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:cobblestone
+      count: 64
+      schema_version: 1
+    - null
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:diamond_boots
+      count: 1
+      components:
+        minecraft:enchantments: '{"minecraft:feather_falling":4}'
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:diamond_leggings
+      count: 1
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:diamond_chestplate
+      count: 1
+      components:
+        minecraft:enchantments: '{"minecraft:protection":4}'
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:diamond_helmet
+      count: 1
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:shield
+      count: 1
+      schema_version: 1
+    - null
+    - null
+    armor:
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:diamond_boots
+      count: 1
+      components:
+        minecraft:enchantments: '{"minecraft:feather_falling":4}'
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:diamond_leggings
+      count: 1
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:diamond_chestplate
+      count: 1
+      components:
+        minecraft:enchantments: '{"minecraft:protection":4}'
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:diamond_helmet
+      count: 1
+      schema_version: 1
+  bow:
+    display-item: BOW
+    contents:
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:bow
+      count: 1
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:tipped_arrow
+      count: 64
+      components:
+        minecraft:potion_contents: '{potion:"minecraft:long_swiftness"}'
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:splash_potion
+      count: 1
+      components:
+        minecraft:potion_contents: '{potion:"minecraft:poison"}'
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:splash_potion
+      count: 1
+      components:
+        minecraft:potion_contents: '{potion:"minecraft:poison"}'
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:splash_potion
+      count: 1
+      components:
+        minecraft:potion_contents: '{potion:"minecraft:poison"}'
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:splash_potion
+      count: 1
+      components:
+        minecraft:potion_contents: '{potion:"minecraft:poison"}'
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:splash_potion
+      count: 1
+      components:
+        minecraft:potion_contents: '{potion:"minecraft:poison"}'
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:lava_bucket
+      count: 1
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:cobblestone
+      count: 64
+      schema_version: 1
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:tipped_arrow
+      count: 64
+      components:
+        minecraft:potion_contents: '{potion:"minecraft:long_swiftness"}'
+      schema_version: 1
+    - null
+    - null
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:splash_potion
+      count: 1
+      components:
+        minecraft:potion_contents: '{potion:"minecraft:poison"}'
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:splash_potion
+      count: 1
+      components:
+        minecraft:potion_contents: '{potion:"minecraft:poison"}'
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:splash_potion
+      count: 1
+      components:
+        minecraft:potion_contents: '{potion:"minecraft:poison"}'
+      schema_version: 1
+    - null
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:cobblestone
+      count: 64
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:diamond_boots
+      count: 1
+      components:
+        minecraft:enchantments: '{"minecraft:protection":4}'
+      schema_version: 1
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    armor:
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:diamond_boots
+      count: 1
+      components:
+        minecraft:enchantments: '{"minecraft:protection":4}'
+      schema_version: 1
+    - null
+    - null
+    - null
+  trident:
+    display-item: TRIDENT
+    contents:
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:trident
+      count: 1
+      components:
+        minecraft:enchantments: '{"minecraft:impaling":3,"minecraft:loyalty":3}'
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:ender_pearl
+      count: 1
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:trident
+      count: 1
+      components:
+        minecraft:enchantments: '{"minecraft:impaling":3,"minecraft:riptide":3}'
+      schema_version: 1
+    - null
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:water_bucket
+      count: 1
+      schema_version: 1
+    - null
+    - null
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:cooked_beef
+      count: 12
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:cobblestone
+      count: 64
+      schema_version: 1
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:diamond_boots
+      count: 1
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:diamond_leggings
+      count: 1
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:diamond_chestplate
+      count: 1
+      components:
+        minecraft:enchantments: '{"minecraft:protection":4}'
+      schema_version: 1
+    - null
+    - null
+    - null
+    - null
+    armor:
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:diamond_boots
+      count: 1
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:diamond_leggings
+      count: 1
+      schema_version: 1
+    - ==: org.bukkit.inventory.ItemStack
+      DataVersion: 4438
+      id: minecraft:diamond_chestplate
+      count: 1
+      components:
+        minecraft:enchantments: '{"minecraft:protection":4}'
+      schema_version: 1
+    - null
+
+# Spawn locations will be saved here automatically when using /claymorepvp setspawn commands.
+# Hardcoded defaults are also used in DuelManager.
+# spawn1:
+# spawn2:

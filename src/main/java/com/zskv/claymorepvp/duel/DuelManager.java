@@ -90,6 +90,12 @@ public class DuelManager {
         plugin.saveConfig();
     }
 
+    public void reload() {
+        plugin.reloadConfig();
+        kitManager.loadKits();
+        loadLocations();
+    }
+
     public boolean canStartDuel() {
         return spawn1 != null && spawn2 != null;
     }
