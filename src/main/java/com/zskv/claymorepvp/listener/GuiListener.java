@@ -57,9 +57,11 @@ public class GuiListener implements Listener {
                 return;
             }
 
-            if (clicked.getType() == Material.IRON_SWORD) {
-                String kitName = org.bukkit.ChatColor.stripColor(clicked.getItemMeta().getDisplayName());
-                player.openInventory(com.zskv.claymorepvp.gui.DuelGUI.createConfirmDuelGUI(target, kitName));
+            if (clicked.getType() != Material.GRAY_STAINED_GLASS_PANE) {
+                if (clicked.hasItemMeta() && clicked.getItemMeta().hasDisplayName()) {
+                    String kitName = org.bukkit.ChatColor.stripColor(clicked.getItemMeta().getDisplayName());
+                    player.openInventory(com.zskv.claymorepvp.gui.DuelGUI.createConfirmDuelGUI(target, kitName));
+                }
             }
         } else if (title.contains("Duel: ")) {
             event.setCancelled(true);
