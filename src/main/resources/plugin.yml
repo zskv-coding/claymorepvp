@@ -1,5 +1,5 @@
 name: claymorepvp
-version: '1.0-SNAPSHOT'
+version: 1.0-SNAPSHOT
 main: com.zskv.claymorepvp.Claymorepvp
 api-version: '1.21'
 commands:

@@ -15,11 +15,19 @@ import org.bukkit.SoundCategory;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.block.Block;
+import org.bukkit.block.structure.Mirror;
+import org.bukkit.block.structure.StructureRotation;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.meta.FireworkMeta;
+import org.bukkit.structure.Structure;
+import org.bukkit.structure.StructureManager;
+import org.bukkit.util.Vector;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 public class DuelManager {
@@ -27,6 +35,9 @@ public class DuelManager {
     private final KitManager kitManager;
     private final Map<UUID, Duel> activeDuels = new HashMap<>();
     private final Map<UUID, Duel> pendingRequests = new HashMap<>();
+    private final Map<String, DuelMap> maps = new HashMap<>();
+    private int nextDuelOffset = 0;
+    private boolean isPasting = false;
     private Location spawn1;
     private Location spawn2;
 
@@ -35,10 +46,15 @@ public class DuelManager {
         this.kitManager = kitManager;
         initArena();
         loadLocations();
+        loadMaps();
     }
 
     public Claymorepvp getPlugin() {
         return plugin;
+    }
+
+    public boolean isPasting() {
+        return isPasting;
     }
 
     private void initArena() {
@@ -46,25 +62,23 @@ public class DuelManager {
         if (arenaWorld == null) {
             arenaWorld = Bukkit.createWorld(new WorldCreator("arena_maps"));
         }
-        
-        if (arenaWorld != null) {
-            spawn1 = new Location(arenaWorld, 26.49, 100.00, -0.55, 89.93f, 0.30f);
-            spawn2 = new Location(arenaWorld, -21.50, 100.00, -0.48, -89.72f, 0.87f);
-            
-            // Initial barrier setup
-            setBarrier(true);
-        }
     }
 
-    private void setBarrier(boolean up) {
+    private void setBarrier(Duel duel, boolean up) {
         World world = Bukkit.getWorld("arena_maps");
-        if (world == null) return;
+        DuelMap map = duel.getMap();
+        Location base = duel.getBaseLocation();
+        if (world == null || map == null || base == null) return;
 
         Material material = up ? Material.BARRIER : Material.AIR;
-        // Barrier = POS1: 2 100 -39 to POS2: 2 121 37
-        for (int y = 100; y <= 121; y++) {
-            for (int z = -39; z <= 37; z++) {
-                world.getBlockAt(2, y, z).setType(material);
+        Vector min = map.getBarrierMin(base);
+        Vector max = map.getBarrierMax(base);
+
+        for (int x = min.getBlockX(); x <= max.getBlockX(); x++) {
+            for (int y = min.getBlockY(); y <= max.getBlockY(); y++) {
+                for (int z = min.getBlockZ(); z <= max.getBlockZ(); z++) {
+                    world.getBlockAt(x, y, z).setType(material);
+                }
             }
         }
     }
@@ -75,6 +89,198 @@ public class DuelManager {
         }
         if (plugin.getConfig().contains("arena.spawn2")) {
             spawn2 = plugin.getConfig().getLocation("arena.spawn2");
+        }
+    }
+
+    private double getCoord(ConfigurationSection section, String path) {
+        Object val = section.get(path);
+        if (val instanceof Number) {
+            return ((Number) val).doubleValue();
+        }
+        return 0.0;
+    }
+
+    private void loadMaps() {
+        maps.clear();
+        ConfigurationSection section = plugin.getConfig().getConfigurationSection("maps");
+        if (section == null) {
+            plugin.getLogger().warning("No 'maps' section found in config.yml!");
+            return;
+        }
+
+        File structuresDir = new File(plugin.getDataFolder(), "structures");
+        if (!structuresDir.exists()) structuresDir.mkdirs();
+
+        World arenaWorld = Bukkit.getWorld("arena_maps");
+        if (arenaWorld == null) {
+            arenaWorld = Bukkit.createWorld(new WorldCreator("arena_maps"));
+        }
+
+        int scanX = -2000;
+
+        for (String key : section.getKeys(false)) {
+            String structureName = section.getString(key + ".structure");
+            if (structureName == null) continue;
+
+            File structureFile = new File(structuresDir, structureName);
+            if (!structureFile.exists()) {
+                plugin.getLogger().warning("Structure file " + structureName + " for map " + key + " not found!");
+                continue;
+            }
+
+            DuelMap map = new DuelMap(key, structureName);
+
+            // Load paste offset if any
+            Vector pOffset = section.getVector(key + ".paste-offset");
+            if (pOffset == null && section.contains(key + ".paste-offset"))
+                pOffset = new Vector(getCoord(section, key + ".paste-offset.x"), getCoord(section, key + ".paste-offset.y"), getCoord(section, key + ".paste-offset.z"));
+            if (pOffset != null) map.setPasteOffset(pOffset);
+
+            // PRE-SCAN markers
+            Location scanLoc = new Location(arenaWorld, scanX, 100, 0);
+            
+            // Just scan the structure file directly without pasting/clearing in the world
+            if (scanStructureFromFile(map)) {
+                maps.put(key, map);
+                plugin.getLogger().info("Loaded duel map: " + key + " (Scanned from file)");
+            } else {
+                plugin.getLogger().warning("Failed to load map " + key + "! Markers missing in structure.");
+            }
+            scanX -= 500;
+        }
+    }
+
+    private boolean scanStructureFromFile(DuelMap map) {
+        StructureManager manager = Bukkit.getStructureManager();
+        try {
+            File structuresDir = new File(plugin.getDataFolder(), "structures");
+            File structureFile = new File(structuresDir, map.getStructureName());
+            Structure structure = manager.loadStructure(structureFile);
+            
+            // We need to use structure.getPalettes() or similar if available, 
+            // but the easiest way without pasting is to use structure.getEntities() and blocks if possible.
+            // However, Bukkit's Structure API is limited. 
+            // If we MUST paste to scan, we should do it once and leave it, or use a separate world.
+            // Since we already have the scan logic, let's just make it only happen if not already loaded.
+            
+            World arenaWorld = Bukkit.getWorld("arena_maps");
+            Location scanLoc = new Location(arenaWorld, -5000, 100, 0); // Far away
+            
+            pasteMap(map, scanLoc);
+            scanStructure(scanLoc, map);
+            clearArea(arenaWorld, map, scanLoc);
+            
+            return map.isLoaded();
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    private void scanStructure(Location pasteLoc, DuelMap map) {
+        World world = pasteLoc.getWorld();
+        if (world == null || map == null) return;
+        StructureManager manager = Bukkit.getStructureManager();
+        try {
+            File structuresDir = new File(plugin.getDataFolder(), "structures");
+            File structureFile = new File(structuresDir, map.getStructureName());
+            Structure structure = manager.loadStructure(structureFile);
+            Vector size = structure.getSize();
+            for (int x = 0; x < size.getBlockX(); x++) {
+                for (int y = 0; y < size.getBlockY(); y++) {
+                    for (int z = 0; z < size.getBlockZ(); z++) {
+                        Location loc = pasteLoc.clone().add(x, y, z);
+                        Block block = world.getBlockAt(loc);
+                        Material mat = block.getType();
+                        if (mat == Material.AIR) continue;
+
+                        Vector relPos = new Vector(x + map.getPasteOffset().getX(), y + map.getPasteOffset().getY(), z + map.getPasteOffset().getZ());
+                        if (mat == Material.LIME_WOOL) map.setSpawn1(relPos);
+                        else if (mat == Material.ORANGE_WOOL) map.setSpawn2(relPos);
+                        else if (mat == Material.RED_WOOL) map.setBarrierMin(relPos);
+                        else if (mat == Material.BLUE_WOOL) map.setBarrierMax(relPos);
+                        else if (mat == Material.BLACK_WOOL) map.setFieldMin(relPos);
+                        else if (mat == Material.WHITE_WOOL) map.setFieldMax(relPos);
+                    }
+                }
+            }
+        } catch (IOException ignored) {
+        }
+    }
+
+    private void clearArea(World world, DuelMap map, Location base) {
+        StructureManager manager = Bukkit.getStructureManager();
+        try {
+            File structuresDir = new File(plugin.getDataFolder(), "structures");
+            File structureFile = new File(structuresDir, map.getStructureName());
+            Structure structure = manager.loadStructure(structureFile);
+            Vector size = structure.getSize();
+            for (int x = 0; x < size.getBlockX(); x++) {
+                for (int y = 0; y < size.getBlockY(); y++) {
+                    for (int z = 0; z < size.getBlockZ(); z++) {
+                        Block block = world.getBlockAt(base.clone().add(x, y, z));
+                        if (block.getType() != Material.AIR) {
+                            block.setType(Material.AIR, false); // false = no physics
+                        }
+                    }
+                }
+            }
+        } catch (IOException ignored) {
+        }
+    }
+
+    private void cleanupMarkers(Duel duel, Location pasteLoc) {
+        DuelMap map = duel.getMap();
+        World world = pasteLoc.getWorld();
+        if (world == null || map == null) return;
+        StructureManager manager = Bukkit.getStructureManager();
+        isPasting = true;
+        try {
+            File structuresDir = new File(plugin.getDataFolder(), "structures");
+            File structureFile = new File(structuresDir, map.getStructureName());
+            Structure structure = manager.loadStructure(structureFile);
+            Vector size = structure.getSize();
+            for (int x = 0; x < size.getBlockX(); x++) {
+                for (int y = 0; y < size.getBlockY(); y++) {
+                    for (int z = 0; z < size.getBlockZ(); z++) {
+                        Location loc = pasteLoc.clone().add(x, y, z);
+                        Block block = world.getBlockAt(loc);
+                        Material mat = block.getType();
+                        if (mat == Material.LIME_WOOL || mat == Material.ORANGE_WOOL) {
+                            block.setType(Material.BEACON, false);
+                        } else if (mat == Material.RED_WOOL || mat == Material.BLUE_WOOL || mat == Material.BLACK_WOOL || mat == Material.WHITE_WOOL) {
+                            block.setType(Material.AIR, false);
+                        }
+                    }
+                }
+            }
+        } catch (IOException ignored) {
+        } finally {
+            isPasting = false;
+        }
+    }
+
+    private void pasteMap(DuelMap map, Location loc) {
+        World world = loc.getWorld();
+        if (world == null) return;
+
+        File structuresDir = new File(plugin.getDataFolder(), "structures");
+        if (!structuresDir.exists()) structuresDir.mkdirs();
+
+        File structureFile = new File(structuresDir, map.getStructureName());
+        if (!structureFile.exists()) {
+            plugin.getLogger().warning("Structure file " + map.getStructureName() + " not found!");
+            return;
+        }
+
+        StructureManager manager = Bukkit.getStructureManager();
+        isPasting = true;
+        try {
+            Structure structure = manager.loadStructure(structureFile);
+            structure.place(loc, true, StructureRotation.NONE, Mirror.NONE, 0, 1.0f, new Random());
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            isPasting = false;
         }
     }
 
@@ -94,10 +300,17 @@ public class DuelManager {
         plugin.reloadConfig();
         kitManager.loadKits();
         loadLocations();
+        loadMaps();
     }
 
     public boolean canStartDuel() {
-        return spawn1 != null && spawn2 != null;
+        return !maps.isEmpty();
+    }
+
+    private DuelMap getRandomMap() {
+        if (maps.isEmpty()) return null;
+        List<DuelMap> list = new ArrayList<>(maps.values());
+        return list.get(new Random().nextInt(list.size()));
     }
 
     public void sendRequest(Player challenger, Player challenged, String kitName) {
@@ -130,11 +343,14 @@ public class DuelManager {
             return;
         }
 
+        if (duel.isAccepted()) return; // Already being processed
+
         if (!canStartDuel()) {
             challenged.sendMessage(ChatUtils.format("&cArena is not set up! Contact an administrator."));
             return;
         }
 
+        duel.setAccepted(true);
         pendingRequests.remove(challenged.getUniqueId());
         startDuel(duel);
     }
@@ -146,6 +362,27 @@ public class DuelManager {
         if (p1 == null || !p1.isOnline() || p2 == null || !p2.isOnline()) {
             return;
         }
+
+        DuelMap map = getRandomMap();
+        if (map == null) {
+            p1.sendMessage(ChatUtils.format("&cArena is not set up! Check config.yml."));
+            p2.sendMessage(ChatUtils.format("&cArena is not set up! Check config.yml."));
+            return;
+        }
+
+        World arenaWorld = Bukkit.getWorld("arena_maps");
+        if (arenaWorld == null) {
+            arenaWorld = Bukkit.createWorld(new WorldCreator("arena_maps"));
+        }
+
+        Location baseLoc = new Location(arenaWorld, nextDuelOffset, 100, 0);
+        nextDuelOffset += 500; // Spread out by 500 blocks each time
+
+        duel.setMap(map);
+        duel.setBaseLocation(baseLoc);
+        Location pasteLoc = baseLoc.clone().add(map.getPasteOffset());
+        pasteMap(map, pasteLoc);
+        cleanupMarkers(duel, pasteLoc);
 
         // Increment matches and kit plays
         plugin.getDatabaseManager().incrementMatches(p1.getUniqueId(), p1.getName());
@@ -160,8 +397,17 @@ public class DuelManager {
         activeDuels.put(p1.getUniqueId(), duel);
         activeDuels.put(p2.getUniqueId(), duel);
 
-        p1.teleport(spawn1);
-        p2.teleport(spawn2);
+        // Teleport after a longer delay to ensure client has loaded the map area and physics has settled
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (p1 != null && p1.isOnline() && p2 != null && p2.isOnline()) {
+                p1.setFallDistance(0);
+                p2.setFallDistance(0);
+                p1.setVelocity(new Vector(0, 0, 0));
+                p2.setVelocity(new Vector(0, 0, 0));
+                p1.teleport(map.getSpawn1(baseLoc));
+                p2.teleport(map.getSpawn2(baseLoc));
+            }
+        }, 30L);
 
         p1.setGameMode(GameMode.ADVENTURE);
         p2.setGameMode(GameMode.ADVENTURE);
@@ -175,7 +421,7 @@ public class DuelManager {
         }
 
         // Ensure barrier is up
-        setBarrier(true);
+        setBarrier(duel, true);
 
         // Countdown
         new org.bukkit.scheduler.BukkitRunnable() {
@@ -191,15 +437,15 @@ public class DuelManager {
                     p1.playSound(p1.getLocation(), "custom:duels_countdown_go", SoundCategory.VOICE, 1.0f, 1.0f);
                     p2.playSound(p2.getLocation(), "custom:duels_countdown_go", SoundCategory.VOICE, 1.0f, 1.0f);
 
-                    // Spawn fireworks at specific locations - only visible to participants
-                    World world = p1.getWorld();
-                    spawnFirework(new Location(world, 31, 100.5, -1), Color.RED, p1, p2);
-                    spawnFirework(new Location(world, -27, 100.5, -1), Color.BLUE, p1, p2);
+                    // Spawn fireworks at specific locations - relative to baseLocation
+                    Location base = duel.getBaseLocation();
+                    spawnFirework(base.clone().add(31, 0.5, -1), Color.RED, p1, p2);
+                    spawnFirework(base.clone().add(-27, 0.5, -1), Color.BLUE, p1, p2);
 
                     p1.sendMessage(fightMsg);
                     p2.sendMessage(fightMsg);
                     
-                    setBarrier(false);
+                    setBarrier(duel, false);
                     duel.setState(DuelState.ACTIVE);
 
                     this.cancel();
@@ -269,7 +515,27 @@ public class DuelManager {
             // Clear items on floor in arena_maps
             World arenaWorld = Bukkit.getWorld("arena_maps");
             if (arenaWorld != null) {
-                arenaWorld.getEntitiesByClass(Item.class).forEach(Item::remove);
+                // Clear items only in the relevant duel area
+                Location base = duel.getBaseLocation();
+                DuelMap map = duel.getMap();
+                if (base != null && map != null) {
+                    Vector fMin = map.getFieldMin(base);
+                    Vector fMax = map.getFieldMax(base);
+                    
+                    arenaWorld.getEntitiesByClass(Item.class).forEach(item -> {
+                        Location loc = item.getLocation();
+                        if (loc.getX() >= fMin.getX() && loc.getX() <= fMax.getX() &&
+                            loc.getZ() >= fMin.getZ() && loc.getZ() <= fMax.getZ()) {
+                            item.remove();
+                        }
+                    });
+
+                    // Reset barrier for THIS duel
+                    setBarrier(duel, false);
+                    
+                    // Clear the entire map structure area
+                    clearArea(arenaWorld, map, base.clone().add(map.getPasteOffset()));
+                }
             }
             
             // Teleport all players to hub
@@ -292,11 +558,6 @@ public class DuelManager {
                         loser.teleport(hubLoc);
                     }
                 }, 5L);
-            }
-            
-            // Reset barrier if no other duels are active (for now only 1 duel at a time :>)
-            if (activeDuels.isEmpty()) {
-                setBarrier(true);
             }
         }
     }
