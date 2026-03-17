@@ -9,6 +9,9 @@ public class Duel {
     private DuelState state;
     private long requestTime;
     private String kitName;
+    private DuelMap map;
+    private org.bukkit.Location baseLocation;
+    private boolean accepted = false;
 
     public Duel(UUID challenger, UUID challenged, String kitName) {
         this.challenger = challenger;
@@ -36,6 +39,30 @@ public class Duel {
 
     public void setState(DuelState state) {
         this.state = state;
+    }
+
+    public DuelMap getMap() {
+        return map;
+    }
+
+    public void setMap(DuelMap map) {
+        this.map = map;
+    }
+
+    public org.bukkit.Location getBaseLocation() {
+        return baseLocation;
+    }
+
+    public void setBaseLocation(org.bukkit.Location baseLocation) {
+        this.baseLocation = baseLocation;
+    }
+
+    public boolean isAccepted() {
+        return accepted;
+    }
+
+    public void setAccepted(boolean accepted) {
+        this.accepted = accepted;
     }
 
     public long getRequestTime() {

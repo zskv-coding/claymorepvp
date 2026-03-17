@@ -36,12 +36,7 @@ public class LeaderboardManager {
     }
 
     private void cleanupOldDisplays() {
-        if (location == null) return;
-        for (Entity entity : location.getWorld().getNearbyEntities(location, 1.0, 1.0, 1.0)) {
-            if (entity instanceof TextDisplay && entity.getScoreboardTags().contains("ffa_leaderboard")) {
-                entity.remove();
-            }
-        }
+        findAndCleanupDisplays();
     }
 
     private void startUpdateTask() {
@@ -54,14 +49,44 @@ public class LeaderboardManager {
         plugin.getDatabaseManager().getTop10FFAKills(topKills -> {
             String content = buildLeaderboardText(topKills);
             
-            if (leaderboardDisplay == null || !leaderboardDisplay.isValid()) {
+            // Re-search to find and cleanup any duplicates or old displays every time to be absolutely sure
+            leaderboardDisplay = findAndCleanupDisplays();
+            
+            // If we still don't have one, spawn a new one
+            if (leaderboardDisplay == null) {
                 leaderboardDisplay = (TextDisplay) location.getWorld().spawnEntity(location, EntityType.TEXT_DISPLAY);
                 leaderboardDisplay.addScoreboardTag("ffa_leaderboard");
                 leaderboardDisplay.setBillboard(org.bukkit.entity.Display.Billboard.FIXED);
+                plugin.getLogger().info("Created new leaderboard TextDisplay at " + location.toString());
             }
             
             leaderboardDisplay.setText(ChatUtils.formatNoPrefix(content));
         });
+    }
+
+    private TextDisplay findAndCleanupDisplays() {
+        if (location == null || location.getWorld() == null) return null;
+        TextDisplay found = null;
+        
+        // Use a larger radius (5.0 blocks) to find any displaced or old displays
+        for (Entity entity : location.getWorld().getNearbyEntities(location, 5.0, 5.0, 5.0)) {
+            if (entity instanceof TextDisplay) {
+                TextDisplay td = (TextDisplay) entity;
+                String text = td.getText();
+                boolean isLeaderboard = td.getScoreboardTags().contains("ffa_leaderboard") || 
+                                     (text != null && text.contains("FFA Top 10 Killers"));
+                
+                if (isLeaderboard) {
+                    if (found == null && td.isValid()) {
+                        found = td;
+                    } else {
+                        // Remove any extra ones found or invalid ones
+                        entity.remove();
+                    }
+                }
+            }
+        }
+        return found;
     }
 
     private String buildLeaderboardText(Map<String, Integer> topKills) {

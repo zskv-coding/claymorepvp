@@ -2,10 +2,17 @@ package com.zskv.claymorepvp.listener;
 
 import com.zskv.claymorepvp.duel.Duel;
 import com.zskv.claymorepvp.duel.DuelManager;
+import com.zskv.claymorepvp.duel.DuelState;
 import com.zskv.claymorepvp.util.ChatUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockFromToEvent;
+import org.bukkit.event.block.BlockPhysicsEvent;
+import org.bukkit.event.block.BlockRedstoneEvent;
+import org.bukkit.event.block.BlockGrowEvent;
+import org.bukkit.event.block.BlockFadeEvent;
+import org.bukkit.event.block.BlockSpreadEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -24,6 +31,48 @@ public class DuelListener implements Listener {
 
     public DuelListener(DuelManager duelManager) {
         this.duelManager = duelManager;
+    }
+
+    @EventHandler(priority = org.bukkit.event.EventPriority.HIGHEST)
+    public void onBlockPhysics(BlockPhysicsEvent event) {
+        if (duelManager.isPasting() && event.getBlock().getWorld().getName().equals("arena_maps")) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = org.bukkit.event.EventPriority.HIGHEST)
+    public void onBlockFromTo(BlockFromToEvent event) {
+        if (duelManager.isPasting() && event.getBlock().getWorld().getName().equals("arena_maps")) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = org.bukkit.event.EventPriority.HIGHEST)
+    public void onBlockRedstone(BlockRedstoneEvent event) {
+        if (duelManager.isPasting() && event.getBlock().getWorld().getName().equals("arena_maps")) {
+            event.setNewCurrent(event.getOldCurrent());
+        }
+    }
+
+    @EventHandler(priority = org.bukkit.event.EventPriority.HIGHEST)
+    public void onBlockGrow(BlockGrowEvent event) {
+        if (duelManager.isPasting() && event.getBlock().getWorld().getName().equals("arena_maps")) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = org.bukkit.event.EventPriority.HIGHEST)
+    public void onBlockFade(BlockFadeEvent event) {
+        if (duelManager.isPasting() && event.getBlock().getWorld().getName().equals("arena_maps")) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = org.bukkit.event.EventPriority.HIGHEST)
+    public void onBlockSpread(BlockSpreadEvent event) {
+        if (duelManager.isPasting() && event.getBlock().getWorld().getName().equals("arena_maps")) {
+            event.setCancelled(true);
+        }
     }
 
     @EventHandler
@@ -76,20 +125,29 @@ public class DuelListener implements Listener {
         Player player = event.getPlayer();
         if (!duelManager.isInDuel(player.getUniqueId())) return;
 
+        Duel duel = duelManager.getDuel(player.getUniqueId());
+        // Enforce boundaries during STARTING (countdown) and ACTIVE states
+        if (duel == null || (duel.getState() != DuelState.ACTIVE && duel.getState() != DuelState.STARTING) || duel.getMap() == null) return;
+
+        Location base = duel.getBaseLocation();
+        if (base == null) return;
+
         Location to = event.getTo();
         if (to == null) return;
 
-        // Boundaries: X: [-36, 40], Y: [100, 123], Z: [-39, 37]
-        boolean outside = to.getX() < -36 || to.getX() > 40 ||
-                          to.getY() < 100 || to.getY() > 123 ||
-                          to.getZ() < -39 || to.getZ() > 37;
+        Vector min = duel.getMap().getFieldMin(base);
+        Vector max = duel.getMap().getFieldMax(base);
+
+        boolean outside = to.getX() < min.getX() || to.getX() > max.getX() ||
+                          to.getY() < min.getY() || to.getY() > max.getY() ||
+                          to.getZ() < min.getZ() || to.getZ() > max.getZ();
 
         if (outside) {
             // Prevent repeated triggers for a smoother experience
             if (recentlyThrown.contains(player.getUniqueId())) return;
 
             // Find direction to center
-            Vector center = new Vector(2, 100, -1);
+            Vector center = min.clone().add(max).multiply(0.5);
             Vector toVec = to.toVector();
             Vector direction = center.subtract(toVec).normalize();
 

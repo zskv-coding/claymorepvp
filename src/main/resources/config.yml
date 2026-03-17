@@ -522,7 +522,22 @@ kits:
       schema_version: 1
     - null
 
-# Spawn locations will be saved here automatically when using /claymorepvp setspawn commands.
-# Hardcoded defaults are also used in DuelManager.
-# spawn1:
-# spawn2:
+# Maps configuration
+# Each map needs a structure (.nbt) in the 'structures' folder in the plugin directory.
+maps:
+  v3:
+    structure: "Claymore_Arena_Map_v3.nbt"
+    # OPTIONAL: Shift the entire map if needed
+    paste-offset:
+      ==: Vector
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    # MARKER BLOCKS (Place these inside your .nbt structure to define locations):
+    # - LIME_WOOL: Player 1 Spawn
+    # - ORANGE_WOOL: Player 2 Spawn
+    # - RED_WOOL: Barrier Corner 1
+    # - BLUE_WOOL: Barrier Corner 2
+    # - BLACK_WOOL: Playing Field Corner 1
+    # - WHITE_WOOL: Playing Field Corner 2
+    # All markers are automatically replaced with AIR when the duel starts.
