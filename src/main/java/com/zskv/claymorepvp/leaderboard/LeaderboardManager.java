@@ -36,20 +36,34 @@ public class LeaderboardManager {
     }
 
     private void cleanupOldDisplays() {
-        findAndCleanupDisplays();
+        cleanupAllDisplays();
     }
 
     private void startUpdateTask() {
         if (location == null) return;
-        updateTask = Bukkit.getScheduler().runTaskTimer(plugin, this::updateLeaderboard, 20L, 1200L); // Every 60 seconds
+        updateTask = Bukkit.getScheduler().runTaskTimer(plugin, this::updateLeaderboard, 20L, 6000L); // Every 5 minutes
     }
 
     public void updateLeaderboard() {
         if (location == null) return;
+        
+        // Ensure the chunk is loaded so we can find/update the display
+        if (!location.isChunkLoaded()) {
+            location.getChunk().load();
+        }
+
         plugin.getDatabaseManager().getTop10FFAKills(topKills -> {
             String content = buildLeaderboardText(topKills);
             
-            // Re-search to find and cleanup any duplicates or old displays every time to be absolutely sure
+            // First check if our cached reference is still valid
+            if (leaderboardDisplay != null && leaderboardDisplay.isValid() && leaderboardDisplay.getWorld().equals(location.getWorld())) {
+                leaderboardDisplay.setText(ChatUtils.formatNoPrefix(content));
+                // Periodically do a cleanup of any duplicates that might have leaked
+                findAndCleanupDisplays();
+                return;
+            }
+            
+            // If not, search for an existing one or spawn a new one
             leaderboardDisplay = findAndCleanupDisplays();
             
             // If we still don't have one, spawn a new one
@@ -66,21 +80,28 @@ public class LeaderboardManager {
 
     private TextDisplay findAndCleanupDisplays() {
         if (location == null || location.getWorld() == null) return null;
+        
+        // Ensure chunk is loaded to be able to find entities
+        if (!location.isChunkLoaded()) {
+            location.getChunk().load();
+        }
+
         TextDisplay found = null;
         
-        // Use a larger radius (5.0 blocks) to find any displaced or old displays
-        for (Entity entity : location.getWorld().getNearbyEntities(location, 5.0, 5.0, 5.0)) {
+        // Use a slightly larger radius to find any duplicates
+        for (Entity entity : location.getWorld().getNearbyEntities(location, 7.0, 7.0, 7.0)) {
             if (entity instanceof TextDisplay) {
                 TextDisplay td = (TextDisplay) entity;
-                String text = td.getText();
+                
+                // Check if it's our leaderboard by tag or content
                 boolean isLeaderboard = td.getScoreboardTags().contains("ffa_leaderboard") || 
-                                     (text != null && text.contains("FFA Top 10 Killers"));
+                                     (td.getText() != null && td.getText().contains("FFA Top 10 Killers"));
                 
                 if (isLeaderboard) {
                     if (found == null && td.isValid()) {
                         found = td;
                     } else {
-                        // Remove any extra ones found or invalid ones
+                        // Remove any extra ones found
                         entity.remove();
                     }
                 }
@@ -107,8 +128,25 @@ public class LeaderboardManager {
         if (updateTask != null) {
             updateTask.cancel();
         }
-        if (leaderboardDisplay != null) {
-            leaderboardDisplay.remove();
+        cleanupAllDisplays();
+    }
+
+    private void cleanupAllDisplays() {
+        if (location == null || location.getWorld() == null) return;
+        
+        if (!location.isChunkLoaded()) {
+            location.getChunk().load();
+        }
+        
+        for (Entity entity : location.getWorld().getNearbyEntities(location, 10.0, 10.0, 10.0)) {
+            if (entity instanceof TextDisplay) {
+                TextDisplay td = (TextDisplay) entity;
+                boolean isLeaderboard = td.getScoreboardTags().contains("ffa_leaderboard") || 
+                                     (td.getText() != null && td.getText().contains("FFA Top 10 Killers"));
+                if (isLeaderboard) {
+                    entity.remove();
+                }
+            }
         }
     }
 }
