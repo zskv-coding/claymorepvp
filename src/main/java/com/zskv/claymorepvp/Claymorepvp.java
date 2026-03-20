@@ -49,4 +49,8 @@ public final class Claymorepvp extends JavaPlugin {
     public DatabaseManager getDatabaseManager() {
         return databaseManager;
     }
+
+    public LeaderboardManager getLeaderboardManager() {
+        return leaderboardManager;
+    }
 }

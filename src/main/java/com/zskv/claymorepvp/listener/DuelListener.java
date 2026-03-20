@@ -92,6 +92,10 @@ public class DuelListener implements Listener {
             Player killer = victim.getKiller();
             if (killer != null) {
                 duelManager.getPlugin().getDatabaseManager().incrementKills(killer.getUniqueId(), killer.getName());
+                // Trigger leaderboard update after a short delay to allow DB update
+                org.bukkit.Bukkit.getScheduler().runTaskLater(duelManager.getPlugin(), () -> {
+                    duelManager.getPlugin().getLeaderboardManager().updateLeaderboard();
+                }, 20L);
             }
             event.setDeathMessage(null);
             event.getDrops().clear();
@@ -104,6 +108,10 @@ public class DuelListener implements Listener {
                 Player killer = victim.getKiller();
                 if (killer != null) {
                     duelManager.getPlugin().getDatabaseManager().incrementFFAKills(killer.getUniqueId(), killer.getName());
+                    // Trigger leaderboard update after a short delay to allow DB update
+                    org.bukkit.Bukkit.getScheduler().runTaskLater(duelManager.getPlugin(), () -> {
+                        duelManager.getPlugin().getLeaderboardManager().updateLeaderboard();
+                    }, 20L);
                 }
             }
         }
